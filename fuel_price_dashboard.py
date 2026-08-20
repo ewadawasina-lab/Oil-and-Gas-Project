@@ -673,8 +673,7 @@ with tab_about:
 st.divider()
 st.caption(
     "Built by Emmanuel Wadawasina · Data: NBS Petrol/Diesel Price Watch "
-    "(placeholder data shown until real dataset is wired in) · "
-    "Not for commercial or financial decision-making."
+    "Not for commercial or financial decision-making at the moment."
 )
 
 # -----------------------------------------------------------------------

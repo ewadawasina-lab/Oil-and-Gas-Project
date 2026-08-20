@@ -450,10 +450,9 @@ st.divider()
 # TABS
 # -----------------------------------------------------------------------
 tab_trend, tab_map, tab_compare, tab_change, tab_forecast, tab_news, tab_regulatory, \
-tab_newsletter, tab_feedback, tab_about = st.tabs(
+tab_about = st.tabs(
     ["📈 Price Trends", "🗺️ State Map", "📊 State Comparison", "🔁 Monthly Change",
-     "🔮 Forecast", "📰 News", "⚖️ Regulatory & Compliance", "📧 Newsletter",
-     "💬 Feedback", "ℹ️ About"]
+     "🔮 Forecast", "📰 News", "⚖️ Regulatory & Compliance", "ℹ️ About"]
 )
 
 # --- TAB 1: Price trend line chart ---
@@ -608,8 +607,18 @@ with tab_regulatory:
             if law.get("download_url"):
                 st.markdown(f"[📄 {law['download_label']}]({law['download_url']})")
 
-# --- TAB 8: Newsletter signup ---
-with tab_newsletter:
+# --- TAB 8: About ---
+with tab_about:
+    st.subheader("ℹ️ About This Dashboard")
+    st.markdown(ABOUT_TEXT)
+
+# -----------------------------------------------------------------------
+# FOOTER: Newsletter signup + Feedback form, shown on every tab
+# -----------------------------------------------------------------------
+st.divider()
+footer_col1, footer_col2 = st.columns(2)
+
+with footer_col1:
     st.subheader("📧 Weekly Newsletter")
     st.write(
         "Get a weekly email summarizing price trends and the top energy news — "
@@ -645,8 +654,7 @@ with tab_newsletter:
         "newsletter email."
     )
 
-# --- TAB 9: Feedback ---
-with tab_feedback:
+with footer_col2:
     st.subheader("💬 Feedback")
     st.write("Tell me what you think, or what you'd like to see improved.")
 
@@ -668,14 +676,6 @@ with tab_feedback:
                 save_feedback(fb_name, fb_email, fb_message, fb_rating)
                 st.success("Thanks for the feedback! It's been recorded.")
 
-# --- TAB 10: About ---
-with tab_about:
-    st.subheader("ℹ️ About This Dashboard")
-    st.markdown(ABOUT_TEXT)
-
-# -----------------------------------------------------------------------
-# FOOTER
-# -----------------------------------------------------------------------
 st.divider()
 st.caption(
     "Built by Emmanuel Wadawasina · Data: NBS Petrol/Diesel Price Watch "

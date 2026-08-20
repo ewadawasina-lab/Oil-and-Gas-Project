@@ -99,7 +99,6 @@ MONTHS = pd.date_range("2026-01-01", periods=6, freq="MS")
 REGULATORY_LAWS = [
     {
         "name": "Petroleum Industry Act (PIA), 2021",
-        "year": "2021",
         "summary": (
             "Nigeria's most significant oil & gas law in two decades, signed August 2021. "
             "It overhauled how the sector is governed, taxed, and regulated. It split "
@@ -113,8 +112,7 @@ REGULATORY_LAWS = [
         "download_label": "Download full Act (PDF, via NUPRC)"
     },
     {
-        "name": "Nigeria Tax Act (NTA), 2025 — Hydrocarbon Tax provisions",
-        "year": "2025 (effective Jan 2026)",
+        "name": "Nigeria Tax Act (NTA), 2025: Hydrocarbon Tax provisions", (effective Jan 2026)",
         "summary": (
             "Part of Nigeria's broader 2025 tax reform, which consolidated over 50 tax "
             "laws. For oil & gas, it replaced the decades-old Petroleum Profits Tax Act "

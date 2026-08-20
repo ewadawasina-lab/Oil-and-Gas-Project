@@ -414,6 +414,61 @@ st.sidebar.download_button(
 )
 
 st.sidebar.divider()
+
+with st.sidebar.expander("📧 Weekly Newsletter"):
+    st.write(
+        "Get a weekly email summarizing price trends and the top energy news — "
+        "pick exactly what you want to hear about."
+    )
+    with st.form("newsletter_form", clear_on_submit=True):
+        sub_email = st.text_input("Email address")
+        want_all = st.checkbox("Send me everything (all products + full news roundup)")
+        sub_products = st.multiselect(
+            "Or pick specific products to track",
+            options=list(PRODUCTS.keys()),
+            format_func=lambda p: PRODUCTS[p],
+            disabled=want_all
+        )
+        submitted = st.form_submit_button("Subscribe")
+
+        if submitted:
+            if not sub_email or "@" not in sub_email:
+                st.error("Please enter a valid email address.")
+            elif not want_all and not sub_products:
+                st.error("Pick at least one product, or check 'Send me everything.'")
+            else:
+                chosen = ["ALL"] if want_all else sub_products
+                added = save_subscriber(sub_email, chosen)
+                if added:
+                    st.success(f"Subscribed! You'll get a weekly summary at {sub_email}.")
+                else:
+                    st.info("That email is already subscribed.")
+    st.caption(
+        "Emails go out weekly. You can unsubscribe any time by replying to any "
+        "newsletter email."
+    )
+
+with st.sidebar.expander("💬 Feedback"):
+    st.write("Tell me what you think, or what you'd like to see improved.")
+    with st.form("feedback_form", clear_on_submit=True):
+        fb_name = st.text_input("Name (optional)")
+        fb_email = st.text_input("Email (optional, if you'd like a reply)")
+        fb_rating = st.select_slider(
+            "How would you rate this dashboard?",
+            options=["1 - Poor", "2", "3", "4", "5 - Excellent"],
+            value="3"
+        )
+        fb_message = st.text_area("Your feedback", height=120)
+        fb_submitted = st.form_submit_button("Send Feedback")
+
+        if fb_submitted:
+            if not fb_message.strip():
+                st.error("Please write a message before submitting.")
+            else:
+                save_feedback(fb_name, fb_email, fb_message, fb_rating)
+                st.success("Thanks for the feedback! It's been recorded.")
+
+st.sidebar.divider()
 st.sidebar.caption(
     "Data source: placeholder/generated. Swap in real NBS/NMDPRA data "
     "by editing generate_sample_data()."
@@ -613,69 +668,8 @@ with tab_about:
     st.markdown(ABOUT_TEXT)
 
 # -----------------------------------------------------------------------
-# FOOTER: Newsletter signup + Feedback form, shown on every tab
+# FOOTER
 # -----------------------------------------------------------------------
-st.divider()
-footer_col1, footer_col2 = st.columns(2)
-
-with footer_col1:
-    st.subheader("📧 Weekly Newsletter")
-    st.write(
-        "Get a weekly email summarizing price trends and the top energy news — "
-        "pick exactly what you want to hear about."
-    )
-
-    with st.form("newsletter_form", clear_on_submit=True):
-        sub_email = st.text_input("Email address")
-        want_all = st.checkbox("Send me everything (all products + full news roundup)")
-        sub_products = st.multiselect(
-            "Or pick specific products to track",
-            options=list(PRODUCTS.keys()),
-            format_func=lambda p: PRODUCTS[p],
-            disabled=want_all
-        )
-        submitted = st.form_submit_button("Subscribe")
-
-        if submitted:
-            if not sub_email or "@" not in sub_email:
-                st.error("Please enter a valid email address.")
-            elif not want_all and not sub_products:
-                st.error("Pick at least one product, or check 'Send me everything.'")
-            else:
-                chosen = ["ALL"] if want_all else sub_products
-                added = save_subscriber(sub_email, chosen)
-                if added:
-                    st.success(f"Subscribed! You'll get a weekly summary at {sub_email}.")
-                else:
-                    st.info("That email is already subscribed.")
-
-    st.caption(
-        "Emails go out weekly. You can unsubscribe any time by replying to any "
-        "newsletter email."
-    )
-
-with footer_col2:
-    st.subheader("💬 Feedback")
-    st.write("Tell me what you think, or what you'd like to see improved.")
-
-    with st.form("feedback_form", clear_on_submit=True):
-        fb_name = st.text_input("Name (optional)")
-        fb_email = st.text_input("Email (optional, if you'd like a reply)")
-        fb_rating = st.select_slider(
-            "How would you rate this dashboard?",
-            options=["1 - Poor", "2", "3", "4", "5 - Excellent"],
-            value="3"
-        )
-        fb_message = st.text_area("Your feedback", height=120)
-        fb_submitted = st.form_submit_button("Send Feedback")
-
-        if fb_submitted:
-            if not fb_message.strip():
-                st.error("Please write a message before submitting.")
-            else:
-                save_feedback(fb_name, fb_email, fb_message, fb_rating)
-                st.success("Thanks for the feedback! It's been recorded.")
-
 st.divider()
 st.caption(
     "Built by Emmanuel Wadawasina · Data: NBS Petrol/Diesel Price Watch "

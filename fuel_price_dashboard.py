@@ -470,8 +470,7 @@ with st.sidebar.expander("💬 Feedback"):
 
 st.sidebar.divider()
 st.sidebar.caption(
-    "Data source: placeholder/generated. Swap in real NBS/NMDPRA data "
-    "by editing generate_sample_data()."
+    "Data source: Still working on that as NBS refuse to be current"
 )
 
 # -----------------------------------------------------------------------

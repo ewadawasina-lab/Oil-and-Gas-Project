@@ -37,16 +37,25 @@ from supabase import create_client, Client
 # PAGE CONFIG
 # -----------------------------------------------------------------------
 st.set_page_config(
-    page_title="Nigerian Fuel Price Tracker",
+    page_title="FPTA NG",
     page_icon="⛽",
     layout="wide"
 )
 
-st.title("⛽ Nigerian Fuel & Energy Price Tracker")
+st.title("⛽FPTA NG")
 st.caption(
     f"Tracking fuel price trends across all 36 states + FCT · "
     f"By Emmanuel Wadawasina · Data shown as of {datetime.now().strftime('%B %Y')}"
 )
+
+# Hide Streamlit's automatic multi-page nav at the top of the sidebar —
+# we use our own styled button instead, so this avoids showing the
+# Station Portal link twice.
+st.markdown(
+    "<style>[data-testid='stSidebarNav'] {display: none;}</style>",
+    unsafe_allow_html=True,
+)
+
 st.divider()
 
 # -----------------------------------------------------------------------
@@ -100,7 +109,7 @@ MONTHS = pd.date_range("2026-01-01", periods=6, freq="MS")
 REGULATORY_LAWS = [
     {
         "name": "Petroleum Industry Act (PIA), 2021",
-        "year": "2021",
+        "year": "",
         "summary": (
             "Nigeria's most significant oil & gas law in two decades, signed August 2021. "
             "It overhauled how the sector is governed, taxed, and regulated. It split "
@@ -111,10 +120,34 @@ REGULATORY_LAWS = [
         ),
         "authority": "NUPRC & NMDPRA",
         "download_url": "https://ngfcp.nuprc.gov.ng/wp-content/uploads/2022/09/Petroleum-Industry-Act-2021-pdf-searchable.pdf",
-        "download_label": "Download full Act (PDF, via NUPRC)"
+        "download_label": "Download full Act (PDF, via NUPRC)",
+        "chapters": [
+            {"title": "Chapter 1 — Governance and Institutions", "summary":
+                "Vests ownership of all petroleum in the Federal Government, defines the "
+                "Petroleum Minister's powers, and establishes the Nigerian Upstream "
+                "Petroleum Regulatory Commission (NUPRC) and NMDPRA as the two "
+                "independent regulators replacing the old DPR."},
+            {"title": "Chapter 2 — Administration", "summary":
+                "Sets out general administration of the sector: promoting exploration, "
+                "sustainable development, competitive markets, and efficient, safe "
+                "distribution infrastructure for petroleum products and gas."},
+            {"title": "Chapter 3 — Host Communities Development", "summary":
+                "Requires operators to establish and fund Host Communities Development "
+                "Trusts for communities near their operations, aimed at direct social "
+                "and economic benefits for those areas."},
+            {"title": "Chapter 4 — Petroleum Industry Fiscal Framework", "summary":
+                "Covers royalties, taxes, and fees for the sector, including rules on "
+                "Production Sharing Contracts, cost recovery, and incentives designed "
+                "to attract investment while ensuring fair government revenue."},
+            {"title": "Chapter 5 — Miscellaneous Provisions", "summary":
+                "Covers transitional matters (transfer of staff and assets from the old "
+                "NNPC), legal proceedings involving the regulators, and definitions of "
+                "key terms used throughout the Act (e.g. deep offshore, host community, "
+                "chargeable oil)."},
+        ]
     },
     {
-        "name": "Nigeria Tax Act (NTA), 2025 — Hydrocarbon Tax provisions",
+        "name": "Nigeria Tax Act (NTA), — Hydrocarbon Tax provisions",
         "year": "2025 (effective Jan 2026)",
         "summary": (
             "Part of Nigeria's broader 2025 tax reform, which consolidated over 50 tax "
@@ -127,7 +160,24 @@ REGULATORY_LAWS = [
         ),
         "authority": "Nigeria Revenue Service (NRS)",
         "download_url": "https://www.nrs.gov.ng/uploads/NIGERIA_TAX_ACT_2025_ef6bb812a5.pdf",
-        "download_label": "Download full Act (PDF, via NRS)"
+        "download_label": "Download full Act (PDF, via NRS)",
+        "chapters": [
+            {"title": "Chapter Three, Part I — Hydrocarbon Tax", "summary":
+                "The core oil & gas provision: charges Hydrocarbon Tax specifically on "
+                "companies in upstream petroleum operations, covering how chargeable "
+                "tax and chargeable profits are worked out, and how related companies "
+                "are consolidated for tax purposes."},
+            {"title": "Chapter Three — Other Petroleum Income Provisions", "summary":
+                "Additional rules within the same chapter covering specialised trades "
+                "connected to petroleum operations, sitting alongside the Hydrocarbon "
+                "Tax Part."},
+            {"title": "Elsewhere in the Act — Rates, Levies & Exemptions", "summary":
+                "Other chapters (covering rates of tax generally, and the Development "
+                "Levy) interact with petroleum companies too — e.g. the standard 30% "
+                "Companies Income Tax applies on top of Hydrocarbon Tax, and VAT "
+                "exemptions for gas products (CNG, LNG, LPG) were introduced pending a "
+                "ministerial order."},
+        ]
     },
     {
         "name": "NMDPRA (Nigerian Midstream & Downstream Petroleum Regulatory Authority)",
@@ -142,11 +192,24 @@ REGULATORY_LAWS = [
         ),
         "authority": "Self (NMDPRA)",
         "download_url": "https://ngfcp.nuprc.gov.ng/wp-content/uploads/2022/09/Petroleum-Industry-Act-2021-pdf-searchable.pdf",
-        "download_label": "Download PIA 2021 (PDF) — the law that established NMDPRA"
+        "download_label": "Download PIA 2021 (PDF) — the law that established NMDPRA",
+        "chapters": [
+            {"title": "Established under PIA Chapter 1", "summary":
+                "NMDPRA doesn't have its own standalone Act — it's created within the "
+                "PIA's Chapter 1 (Governance and Institutions), as the counterpart to "
+                "NUPRC, specifically for midstream and downstream operations."},
+            {"title": "Core mandate: infrastructure regulation", "summary":
+                "Regulates transportation, refining, storage, and distribution "
+                "infrastructure for petroleum products and natural gas across Nigeria."},
+            {"title": "Core mandate: pricing framework", "summary":
+                "Holds responsibility for the regulatory framework behind how pump "
+                "prices are determined nationally — the body most directly connected "
+                "to the prices this dashboard tracks."},
+        ]
     },
     {
         "name": "NNPC Limited (commercial entity under the PIA)",
-        "year": "Converted 2021",
+        "year": "2021",
         "summary": (
             "The PIA converted the former state oil corporation, NNPC, into NNPC Limited "
             "— a commercial, profit-driven company incorporated like any private business. "
@@ -156,11 +219,24 @@ REGULATORY_LAWS = [
         ),
         "authority": "NUPRC & NMDPRA (as regulators of NNPC Ltd's operations)",
         "download_url": "https://ngfcp.nuprc.gov.ng/wp-content/uploads/2022/09/Petroleum-Industry-Act-2021-pdf-searchable.pdf",
-        "download_label": "Download PIA 2021 (PDF) — the law that established NNPC Ltd"
+        "download_label": "Download PIA 2021 (PDF) — the law that established NNPC Ltd",
+        "chapters": [
+            {"title": "Conversion provisions (PIA Chapter 2)", "summary":
+                "Sets out how the former NNPC was incorporated as NNPC Limited under the "
+                "Companies and Allied Matters Act, transferring assets, liabilities, and "
+                "staff to the new commercial entity."},
+            {"title": "Commercial obligations", "summary":
+                "Requires NNPC Ltd to pay dividends to its shareholders and retain a "
+                "portion of profit (20%) as retained earnings to grow the business — "
+                "just like any other incorporated company, not a state agency."},
+            {"title": "Loss of regulatory role", "summary":
+                "Explicitly separates NNPC Ltd's former regulatory functions, which "
+                "moved entirely to the new independent regulators, NUPRC and NMDPRA."},
+        ]
     },
     {
-        "name": "Deep Offshore & Inland Basin PSC Act (as amended 2019)",
-        "year": "1999, amended 2019",
+        "name":"Deep Offshore & Inland Basin PSC Act",
+        "year": "1999 (as amended 2019)",
         "summary": (
             "Governs Production Sharing Contracts (PSCs) between government/NNPC and "
             "international oil companies operating in deep offshore areas (beyond 200m "
@@ -171,10 +247,24 @@ REGULATORY_LAWS = [
         ),
         "authority": "NUPRC",
         "download_url": "https://www.nuprc.gov.ng/upload/nuprc_laws/Compendium_of_Oil_and_Gas_Laws_Regulations__Pre_PIA__60cfabaae08d844cc8ca469b.pdf",
-        "download_label": "Download full text (PDF, via NUPRC compendium)"
+        "download_label": "Download full text (PDF, via NUPRC compendium)",
+        "chapters": [
+            {"title": "Scope of application", "summary":
+                "Defines which contracts this Act governs: Production Sharing Contracts "
+                "between the government/NNPC and oil companies operating in deep "
+                "offshore (beyond 200m water depth) and inland basin areas."},
+            {"title": "Original royalty structure (1999)", "summary":
+                "The Act's original fixed royalty rates, which stayed flat regardless of "
+                "how high oil prices rose — later identified as a revenue gap for "
+                "Nigeria over two decades of use."},
+            {"title": "2019 Amendment — price-based royalties", "summary":
+                "Replaced the flat-rate system with a combined production- and "
+                "price-based royalty regime, where rates climb as oil prices rise above "
+                "$20/barrel, so government revenue scales with market conditions."},
+        ]
     },
     {
-        "name": "Gas Flaring, Venting & Methane Emissions Regulations, 2023",
+        "name": "Gas Flaring, Venting & Methane Emissions Regulations",
         "year": "2023",
         "summary": (
             "Issued by NUPRC under the PIA to curb routine gas flaring — the practice of "
@@ -186,10 +276,22 @@ REGULATORY_LAWS = [
         ),
         "authority": "NUPRC",
         "download_url": "https://www.nuprc.gov.ng/gazetted-regulations/",
-        "download_label": "Download regulation (via NUPRC gazetted regulations page)"
+        "download_label": "Download regulation (via NUPRC gazetted regulations page)",
+        "chapters": [
+            {"title": "Flare & vent permits", "summary":
+                "Requires operators to obtain permits for any flaring or venting, "
+                "moving away from flaring being a routine, unpermitted default."},
+            {"title": "Flare-reduction plans", "summary":
+                "Operators must submit concrete plans showing how they'll reduce "
+                "routine flaring over time, not just report volumes flared."},
+            {"title": "Penalties & methane tracking", "summary":
+                "Sets out financial penalties for non-compliance, and extends "
+                "monitoring to methane emissions specifically, not just flared gas "
+                "volumes — aligning with global methane-reduction commitments."},
+        ]
     },
     {
-        "name": "Oil and Gas Export Free Zone Act, 1996 (OGFZA)",
+        "name": "Oil and Gas Export Free Zone Act, (OGFZA)",
         "year": "1996",
         "summary": (
             "Established the Oil and Gas Export Free Zones Authority (OGFZA), which "
@@ -203,7 +305,20 @@ REGULATORY_LAWS = [
         ),
         "authority": "OGFZA",
         "download_url": "https://www.ogfza.gov.ng/wp-content/uploads/2019/11/OGFZA-ACT-1996.pdf",
-        "download_label": "Download full Act (PDF, via OGFZA)"
+        "download_label": "Download full Act (PDF, via OGFZA)",
+        "chapters": [
+            {"title": "Establishment of OGFZA", "summary":
+                "Creates the Oil and Gas Export Free Zones Authority as the licensing "
+                "and regulatory body for Nigeria's oil & gas free trade zones."},
+            {"title": "Licensing framework", "summary":
+                "Sets out how companies (oilfield services, fabrication, equipment "
+                "manufacturing, logistics) apply for and hold licenses to operate "
+                "within a free zone like Onne."},
+            {"title": "Fiscal incentives", "summary":
+                "Details the tax and duty exemptions available to companies inside the "
+                "zones — including exemption from federal, state, and local taxes, "
+                "levies, and VAT — the main draw for investment there."},
+        ]
     },
 ]
 
@@ -263,13 +378,18 @@ def _strip_html(raw_text):
 
 
 @st.cache_data(ttl=1800)  # refresh every 30 minutes
-def fetch_news(feed_urls, keyword_filter=None, limit=5):
+def fetch_news(feed_urls, keyword_filter=None, limit=20, max_age_days=6):
     """Pulls and merges articles from a list of RSS feeds.
     Skips any feed that fails to load instead of crashing the app.
     If keyword_filter is given, only articles matching at least one
     keyword (in title or summary) are kept.
+    Articles older than max_age_days, or with no parseable date, are
+    dropped entirely — recency can't be verified for undated articles,
+    so they're excluded rather than shown as "current."
     """
     articles = []
+    cutoff = datetime.now() - pd.Timedelta(days=max_age_days)
+
     for url in feed_urls:
         try:
             parsed = feedparser.parse(url)
@@ -281,7 +401,12 @@ def fetch_news(feed_urls, keyword_filter=None, limit=5):
                 link = entry.get("link", "")
 
                 time_struct = entry.get("published_parsed") or entry.get("updated_parsed")
-                pub_date = datetime(*time_struct[:6]) if time_struct else datetime.min
+                if not time_struct:
+                    continue  # no reliable date — skip rather than guess
+                pub_date = datetime(*time_struct[:6])
+
+                if pub_date < cutoff:
+                    continue  # older than the allowed window
 
                 if keyword_filter:
                     haystack = f"{title} {summary}".lower()
@@ -454,24 +579,27 @@ with st.spinner("Loading fuel price data…"):
         df = placeholder_df
         real_row_count = 0
 
-if real_row_count > 0:
-    st.success(
-        f"📡 {real_row_count} real, admin-approved submission(s) are live — "
-        "shown alongside demo data for regions/products not yet covered. "
-        "This updates automatically as more submissions are approved.",
-        icon="✅"
-    )
-else:
-    st.info(
-        "📊 Showing placeholder/demo data everywhere for now — no approved "
-        "station submissions yet. As stations submit and you approve prices, "
-        "real data will automatically replace demo data for that state/product.",
-        icon="ℹ️"
-    )
-
 # -----------------------------------------------------------------------
 # SIDEBAR FILTERS
 # -----------------------------------------------------------------------
+st.sidebar.markdown(
+    """
+    <a href="/Station_Portal" target="_self" style="
+        display: block;
+        background-color: #F2A900;
+        border-radius: 8px;
+        padding: 10px 14px;
+        margin-bottom: 16px;
+        text-align: center;
+        text-decoration: none;
+    ">
+        <span style="color:#1F2937; font-weight:700; font-size:1rem;">⛽ Fuel Station Admin?</span><br>
+        <span style="color:#1F2937; font-weight:400; font-size:0.7rem;">Click here to submit data</span>
+    </a>
+    """,
+    unsafe_allow_html=True,
+)
+
 st.sidebar.header("🔎 Filters")
 
 product_choice = st.sidebar.selectbox(
@@ -562,10 +690,7 @@ with st.sidebar.expander("💬 Feedback"):
                 st.success("Thanks for the feedback! It's been recorded.")
 
 st.sidebar.divider()
-st.sidebar.caption(
-    "Data source: admin-approved station submissions (Supabase), with "
-    "generated placeholder data as a fallback when approved data is sparse."
-)
+st.sidebar.caption("Data source: Admin-approved station submissions, and NBS")
 
 # -----------------------------------------------------------------------
 # KEY METRICS ROW (with deltas for a "live" feel)
@@ -616,11 +741,28 @@ with tab_trend:
     if "source" in filtered.columns:
         st.caption("Hover over points to see whether each is 'real' (admin-approved) or 'demo' data.")
 
+    st.subheader("Underlying Data")
+    trend_table = filtered[["date", "state", "price_naira_per_litre"]].copy()
+    trend_table["date"] = trend_table["date"].dt.strftime("%d %b %Y")
+    trend_table = trend_table.rename(columns={
+        "date": "Date", "state": "State",
+        "price_naira_per_litre": f"Price ({unit_label})"
+    }).sort_values(["State", "Date"]).reset_index(drop=True)
+    st.dataframe(trend_table, use_container_width=True)
+
 # --- TAB 2: Bubble map ---
 with tab_map:
-    st.subheader(f"{PRODUCTS[product_choice]} Price by State — Latest Month")
-    latest_month = filtered['date'].max()
-    map_data = filtered[filtered['date'] == latest_month].copy()
+    st.subheader(f"{PRODUCTS[product_choice]} Price by State — Most Recent Data")
+    # Take each state's own most recent record independently, rather than
+    # requiring every state to share one identical "latest date" — real
+    # submissions land on arbitrary days while demo data sits on fixed
+    # monthly dates, so a single shared date would silently drop states.
+    map_data = (
+        filtered.sort_values("date")
+        .groupby("state", as_index=False)
+        .tail(1)
+        .reset_index(drop=True)
+    )
     map_data['lat'] = map_data['state'].map(lambda s: STATE_COORDS[s][0])
     map_data['lon'] = map_data['state'].map(lambda s: STATE_COORDS[s][1])
 
@@ -637,8 +779,71 @@ with tab_map:
         margin={"r": 0, "t": 0, "l": 0, "b": 0},
         height=550
     )
-    st.plotly_chart(fig_map, use_container_width=True)
-    st.caption("Bubble size and color both reflect price — bigger/redder means more expensive.")
+    map_event = st.plotly_chart(
+        fig_map, use_container_width=True, on_select="rerun", key="state_bubble_map"
+    )
+    st.caption(
+        "Bubble size and color both reflect price — bigger/redder means more expensive. "
+        "Click a bubble to drill down into individual filling stations in that state."
+    )
+
+    # --- Drill-down: figure out which state (if any) was clicked ---
+    clicked_state = None
+    if map_event and map_event.get("selection", {}).get("points"):
+        point = map_event["selection"]["points"][0]
+        point_index = point.get("point_index")
+        if point_index is not None and point_index < len(map_data):
+            clicked_state = map_data.iloc[point_index]["state"]
+
+    if clicked_state:
+        st.divider()
+        st.subheader(f"📍 Filling Stations in {clicked_state}")
+
+        client = get_supabase_client()
+        station_rows = []
+        if client is not None:
+            try:
+                result = (
+                    client.table("submissions")
+                    .select("price, submitted_at, photo_url, stations(business_name, address, lga, state)")
+                    .eq("status", "approved")
+                    .eq("product", product_choice)
+                    .execute()
+                )
+                for row in result.data:
+                    station_info = row.get("stations") or {}
+                    if station_info.get("state") == clicked_state:
+                        station_rows.append({
+                            "name": station_info.get("business_name", "Unknown station"),
+                            "address": station_info.get("address", ""),
+                            "lga": station_info.get("lga"),
+                            "price": row["price"],
+                            "date": row["submitted_at"][:10],
+                            "photo_url": row.get("photo_url"),
+                        })
+            except Exception:
+                pass  # fall through to the "no data" message below
+
+        if not station_rows:
+            st.info(
+                f"No individual station-level submissions for {clicked_state} yet — "
+                "this state is currently showing placeholder/demo data. Once filling "
+                "stations in this state submit and get approved, they'll appear here "
+                "individually."
+            )
+        else:
+            for s in station_rows:
+                with st.container(border=True):
+                    photo_col, info_col = st.columns([1, 3])
+                    with photo_col:
+                        if s["photo_url"]:
+                            st.image(s["photo_url"], use_container_width=True)
+                    with info_col:
+                        st.markdown(f"**{s['name']}**")
+                        location_bits = [b for b in [s["address"], s["lga"]] if b]
+                        if location_bits:
+                            st.caption(", ".join(location_bits))
+                        st.write(f"₦{s['price']:,.0f} ({unit_label}) — submitted {s['date']}")
 
 # --- TAB 3: State comparison bar chart ---
 with tab_compare:
@@ -647,10 +852,10 @@ with tab_compare:
     bar_data.columns = ["state", "price"]
     fig_bar = px.bar(
         bar_data, x="price", y="state", orientation="h",
-        color="price", color_continuous_scale="Blues",
+        color="price", color_continuous_scale="RdYlGn_r",  # same scale as Monthly Change tab
         labels={"price": f"Average Price ({unit_label})", "state": ""}
     )
-    fig_bar.update_layout(height=max(400, len(states) * 30), coloraxis_showscale=False)
+    fig_bar.update_layout(height=max(400, len(states) * 30), coloraxis_showscale=True)
     st.plotly_chart(fig_bar, use_container_width=True)
 
 # --- TAB 4: Month-over-month % change ---
@@ -716,7 +921,10 @@ with tab_forecast:
 # --- TAB 6: Oil & Gas / Energy News ---
 with tab_news:
     st.subheader("📰 Oil & Gas / Energy News")
-    st.caption("Pulled live from public news sources · refreshes every 30 minutes")
+    st.caption(
+        "Today's top stories first, then the rest of this week — nothing shown "
+        "here is older than 6 days. Refreshes every 30 minutes."
+    )
 
     news_national_tab, news_intl_tab = st.tabs(["🇳🇬 National", "🌍 International"])
 
@@ -734,20 +942,41 @@ with tab_news:
             st.markdown(f"[Continue reading →]({article['link']})")
             st.divider()
 
+    def render_news_section(articles, empty_message):
+        if not articles:
+            st.info(empty_message)
+            return
+
+        today = datetime.now().date()
+        todays_articles = [a for a in articles if a["date"].date() == today][:3]
+        todays_links = {a["link"] for a in todays_articles}
+        this_week_articles = [a for a in articles if a["link"] not in todays_links][:5]
+
+        if todays_articles:
+            st.markdown("#### 🔥 Today's Top Stories")
+            render_articles(todays_articles, "")
+
+        if this_week_articles:
+            st.markdown("#### 📅 This Week")
+            render_articles(this_week_articles, "")
+
+        if not todays_articles and not this_week_articles:
+            st.info(empty_message)
+
     with news_national_tab:
         with st.spinner("Fetching national energy news…"):
-            national_articles = fetch_news(NATIONAL_FEEDS, keyword_filter=ENERGY_KEYWORDS, limit=5)
-        render_articles(
+            national_articles = fetch_news(NATIONAL_FEEDS, keyword_filter=ENERGY_KEYWORDS, limit=25)
+        render_news_section(
             national_articles,
-            "No national energy news could be loaded right now — try refreshing in a bit."
+            "No national energy news from the last 6 days could be loaded right now — try refreshing in a bit."
         )
 
     with news_intl_tab:
         with st.spinner("Fetching international energy news…"):
-            international_articles = fetch_news(INTERNATIONAL_FEEDS, keyword_filter=None, limit=5)
-        render_articles(
+            international_articles = fetch_news(INTERNATIONAL_FEEDS, keyword_filter=None, limit=25)
+        render_news_section(
             international_articles,
-            "No international energy news could be loaded right now — try refreshing in a bit."
+            "No international energy news from the last 6 days could be loaded right now — try refreshing in a bit."
         )
 
 # --- TAB 7: Regulatory & Compliance ---
@@ -763,6 +992,13 @@ with tab_regulatory:
         with st.expander(f"**{law['name']}** · {law['year']}"):
             st.write(law["summary"])
             st.caption(f"Administered by: {law['authority']}")
+
+            if law.get("chapters"):
+                st.markdown("**Breakdown by chapter/part:**")
+                for chapter in law["chapters"]:
+                    st.markdown(f"*{chapter['title']}*")
+                    st.write(chapter["summary"])
+
             if law.get("download_url"):
                 st.markdown(f"[📄 {law['download_label']}]({law['download_url']})")
 

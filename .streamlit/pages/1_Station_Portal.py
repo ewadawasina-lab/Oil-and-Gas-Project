@@ -233,6 +233,69 @@ else:
                             st.error(f"Submission failed: {e}")
 
         st.divider()
+        st.subheader("✅ Update Station Status & Availability")
+        st.caption(
+            "You control your own Open/Closed status directly — it won't "
+            "change automatically. Set your usual working hours so "
+            "customers know when to expect you open."
+        )
+
+        existing_availability = (
+            supabase.table("station_availability")
+            .select("*")
+            .eq("station_id", station["id"])
+            .execute()
+        )
+        current = existing_availability.data[0] if existing_availability.data else {}
+        current_available = current.get("available_products", [])
+        current_is_open = current.get("is_open", True)
+        current_opening = current.get("opening_time", "")
+        current_closing = current.get("closing_time", "")
+
+        with st.form("availability_form"):
+            is_open_input = st.toggle("Station is currently OPEN", value=current_is_open)
+
+            hours_col1, hours_col2 = st.columns(2)
+            with hours_col1:
+                opening_time_input = st.text_input(
+                    "Usual opening time", value=current_opening, placeholder="e.g. 6:00 AM"
+                )
+            with hours_col2:
+                closing_time_input = st.text_input(
+                    "Usual closing time", value=current_closing, placeholder="e.g. 9:00 PM"
+                )
+
+            st.write("**Products currently available:**")
+            checked_products = []
+            for code, label in PRODUCTS.items():
+                if st.checkbox(label, value=(code in current_available), key=f"avail_{code}"):
+                    checked_products.append(code)
+
+            availability_submit = st.form_submit_button("Update Status & Availability")
+
+            if availability_submit:
+                payload = {
+                    "available_products": checked_products,
+                    "is_open": is_open_input,
+                    "opening_time": opening_time_input or None,
+                    "closing_time": closing_time_input or None,
+                    "updated_at": datetime.now(timezone.utc).isoformat(),
+                }
+                try:
+                    if existing_availability.data:
+                        supabase.table("station_availability").update(payload).eq(
+                            "station_id", station["id"]
+                        ).execute()
+                    else:
+                        supabase.table("station_availability").insert({
+                            "station_id": station["id"], **payload
+                        }).execute()
+                    status_word = "Open" if is_open_input else "Closed"
+                    st.success(f"Updated! Your station now shows as {status_word}.")
+                except Exception as e:
+                    st.error(f"Could not update status: {e}")
+
+        st.divider()
         st.subheader("Your Recent Submissions")
 
         recent = (
